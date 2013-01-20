@@ -14,8 +14,8 @@ import SignInSystem.component.PersonData;
 import SignInSystem.component.ReferenceTitle;
 
 public class ConnectDatabase {
-	Connection connection = null;
-	Statement statement = null;
+	private Connection connection = null;
+	private Statement statement = null;
 	
 	public ConnectDatabase(){
 		try {
@@ -108,8 +108,6 @@ public class ConnectDatabase {
 		
 		try {
 			Statement stmt = connection.createStatement();
-			
-			
 			for(PersonData personData:contentList){
 				String query=insertParseData(tableName,personData,keyList);
 				//System.out.println(query);
@@ -194,6 +192,16 @@ public class ConnectDatabase {
 		executeUpdate(query);
 		//System.out.println(query);
 
+	}
+	
+	public void setScrollableResultSet(){
+		try {
+			statement=connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	//destructor

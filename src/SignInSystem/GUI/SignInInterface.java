@@ -18,6 +18,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.FlowLayout;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -32,11 +33,18 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import javax.swing.JSpinner;
+import javax.swing.JList;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 
 public class SignInInterface extends JFrame {
 	private static final long serialVersionUID = 1L;
+	private String formName="報名資料";
+	private String dataBase="sample1.db";
 	private JTable jTable=null;
 	private String[] columnName;
 	private ResultSet resultSet;
@@ -46,9 +54,13 @@ public class SignInInterface extends JFrame {
 	private int i=0;
 	
 	private ConnectDatabase db;
+	private JPanel controlPanel;
+	private JComboBox comboBox;
+	private JLabel alertLabel;
+	
 	public SignInInterface(ArrayList<String> columnName,ResultSet resultSet){
 		db=new ConnectDatabase();
-		db.connect("sample.db");
+		db.connect(dataBase);
 		
 		this.columnName=new String[columnName.size()];
 		for(int i=0;i<columnName.size();i++){
@@ -58,6 +70,8 @@ public class SignInInterface extends JFrame {
 		if(resultSet!=null){
 			this.resultSet=resultSet;
 		}
+		
+		setGUI();
 	}
 	
 	public void setGUI() {
@@ -82,58 +96,98 @@ public class SignInInterface extends JFrame {
 		JTableConstraints.fill=GridBagConstraints.BOTH;
 		JTableConstraints.gridx=0;
 		JTableConstraints.gridy=0;
-		JTableConstraints.weighty=4;
+		JTableConstraints.weighty=9;
 		getContentPane().add(jtaelPanel,JTableConstraints);
 		
 		/*New a JPanel for controlPanel*/
-		JPanel controlPanel=new JPanel();
+		controlPanel=new JPanel();
 		controlPanel.setBackground(Color.black);
 		setControlPanel(controlPanel);
 		/*set GridBagConstraints of controlPanel*/
-		GridBagConstraints controlPanelConstraints=new GridBagConstraints();
-		controlPanelConstraints.fill=GridBagConstraints.BOTH;
-		controlPanelConstraints.gridx=0;
-		controlPanelConstraints.gridy=1;
-		controlPanelConstraints.weighty=1;
-		getContentPane().add(controlPanel,controlPanelConstraints);
+		GridBagConstraints gbc_controlPanel=new GridBagConstraints();
+		gbc_controlPanel.fill=GridBagConstraints.BOTH;
+		gbc_controlPanel.gridx=0;
+		gbc_controlPanel.gridy=1;
+		gbc_controlPanel.weighty=1;
+		getContentPane().add(controlPanel,gbc_controlPanel);
+		
+		/*Add combo box to conrtol panel*/
+		comboBox = new JComboBox(columnName);
+		controlPanel.add(comboBox);
+		
+		final JTextField textField = new JTextField();
+		controlPanel.add(textField);
+		textField.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					
+					/*get value from comboBox*/
+					String selectColumnName=(String) comboBox.getSelectedItem();
+					String textFieldText=textField.getText();
+					
+					try {	
+							/*Get result set count*/
+							ResultSet rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM 報名資料 where "+selectColumnName+" ='"+textFieldText+"'");
+							rs.next();
+							int ResultCount = rs.getInt("rowcount");
+							
+							/*if there is any data from this query , do following thing */
+							if(ResultCount!=0){
+								System.out.println("123");
+								//clean the text field
+								textField.setText("");
+								alertLabel.setText("");
+								
+								/*execute query and append data to JTable*/
+								ResultSet testResult = db.executeQuery("SELECT * from 報名資料 where "+selectColumnName+" ='"+textFieldText+"'");
+								while(testResult.next()){
+									String[] appendData=new String[columnName.length];
+									for(int i=0;i<columnName.length;i++)
+										appendData[i]=testResult.getString(i+1);	
+									setData(appendData);
+								}	
+								
+								
+								/*revalidate Jtable*/	
+								jTable.revalidate();
+								
+								/*Let the scroll panel scroll to the bottom*/
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										int dataCount= jTable.getRowCount();
+										jTable.getSelectionModel().setSelectionInterval(dataCount, dataCount);
+										jTable.scrollRectToVisible(new Rectangle(jTable.getCellRect(dataCount, 0, true)));
+											
+									}
+								});
+							}
+							
+							/* if there is no data from query ,do the following thing  */
+							else{
+								alertLabel.setText("no "+selectColumnName+" = "+textFieldText);
+								
+								
+							}
+					}catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}	
+
+					}
+		});
+		
+		
+		
+		textField.setColumns(10);
+		
+		alertLabel = new JLabel("New label");
+		alertLabel.setForeground(Color.YELLOW);
+		controlPanel.add(alertLabel);
 
 	}
 	
 	public void setControlPanel(JPanel panel){
-		
-		final JTextField textField = new JTextField();
-		textField.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent arg0) {
-					ResultSet testResult = db.executeQuery("SELECT * from test2 where 身份證字號 ='"+textField.getText()+"'");
-					try {
-						while(testResult.next()){
-							String[] appendData=new String[columnName.length];
-							for(int i=0;i<columnName.length;i++)
-								appendData[i]=testResult.getString(i+1);	
-							setData(appendData);
-						}
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} 
-					textField.setText("");
-					
-					jTable.revalidate();
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							int dataCount= jTable.getRowCount();
-							jTable.getSelectionModel().setSelectionInterval(dataCount, dataCount);
-							jTable.scrollRectToVisible(new Rectangle(jTable.getCellRect(dataCount, 0, true)));
-							
-						}
-					});
-				}
-		});
-		
-		panel.add(textField);
-		textField.setColumns(10);
 		
 		
 	}
@@ -170,7 +224,7 @@ public class SignInInterface extends JFrame {
 			e.printStackTrace();
 		}
 	}
-	
+
 	
 	
 	public void setData(Object[] a){

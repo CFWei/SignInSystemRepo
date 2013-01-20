@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
+import SignInSystem.GUI.MainGUI;
 import SignInSystem.GUI.SignInInterface;
 import SignInSystem.GUI.SettingDialog;
 import SignInSystem.component.ParseResult;
@@ -32,9 +33,20 @@ public class Main {
 		//SwingUtilities.invokeLater(smir);
 		
 		
-		SettingDialog dialog = new SettingDialog();
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		dialog.setVisible(true);
+		//SettingDialog dialog = new SettingDialog();
+		//dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		//dialog.setVisible(true);
+		
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				MainGUI frame = new MainGUI();
+				frame.setResizable(false);
+				frame.setVisible(true);
+				
+			}
+		});
 		
 		
 	}
@@ -42,23 +54,5 @@ public class Main {
 }
 
 
-class StartMainInterfaceRunnable implements Runnable{
-	private ArrayList<String> columnName;
-	private ResultSet testResult;
-	public StartMainInterfaceRunnable(ArrayList<String> columnName,ResultSet testResult){
-		this.columnName=columnName;
-		this.testResult=testResult;
-	}
-	
-	@Override
-	public void run() {
-		SignInInterface frame = new SignInInterface(columnName,testResult);
-		frame.setGUI();
-		frame.setSize(new Dimension(800,600));
-		frame.setVisible(true);
-		
-		frame.dispose();
-	}
-	
-}
+
 
