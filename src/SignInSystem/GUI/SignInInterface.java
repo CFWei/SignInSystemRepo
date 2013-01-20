@@ -45,6 +45,8 @@ public class SignInInterface extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private String formName="報名資料";
 	private String dataBase="sample1.db";
+	
+	
 	private JTable jTable=null;
 	private String[] columnName;
 	private ResultSet resultSet;
@@ -118,12 +120,40 @@ public class SignInInterface extends JFrame {
 		final JTextField textField = new JTextField();
 		controlPanel.add(textField);
 		textField.addActionListener(new ActionListener() {
+				String selectColumnName=null;
+				String textFieldText=null;
+				
+				public void appendDataToJTable() throws SQLException{
+					ResultSet testResult = db.executeQuery("SELECT * from 報名資料 where "+selectColumnName+" ='"+textFieldText+"'");
+					while(testResult.next()){
+						String[] appendData=new String[columnName.length];
+						for(int i=0;i<columnName.length;i++)
+							appendData[i]=testResult.getString(i+1);	
+						setData(appendData);
+					}	
+					
+				}
+				
+				
+				public void scrollToBottom(){
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							int dataCount= jTable.getRowCount();
+							jTable.getSelectionModel().setSelectionInterval(dataCount, dataCount);
+							jTable.scrollRectToVisible(new Rectangle(jTable.getCellRect(dataCount, 0, true)));
+								
+						}
+					});
+					
+				}
+				
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					
 					/*get value from comboBox*/
-					String selectColumnName=(String) comboBox.getSelectedItem();
-					String textFieldText=textField.getText();
+					selectColumnName=(String) comboBox.getSelectedItem();
+					textFieldText=textField.getText();
 					
 					try {	
 							/*Get result set count*/
@@ -133,40 +163,23 @@ public class SignInInterface extends JFrame {
 							
 							/*if there is any data from this query , do following thing */
 							if(ResultCount!=0){
-								System.out.println("123");
-								//clean the text field
+								/*clean the text field*/
 								textField.setText("");
 								alertLabel.setText("");
 								
 								/*execute query and append data to JTable*/
-								ResultSet testResult = db.executeQuery("SELECT * from 報名資料 where "+selectColumnName+" ='"+textFieldText+"'");
-								while(testResult.next()){
-									String[] appendData=new String[columnName.length];
-									for(int i=0;i<columnName.length;i++)
-										appendData[i]=testResult.getString(i+1);	
-									setData(appendData);
-								}	
-								
+								appendDataToJTable();
 								
 								/*revalidate Jtable*/	
 								jTable.revalidate();
 								
 								/*Let the scroll panel scroll to the bottom*/
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										int dataCount= jTable.getRowCount();
-										jTable.getSelectionModel().setSelectionInterval(dataCount, dataCount);
-										jTable.scrollRectToVisible(new Rectangle(jTable.getCellRect(dataCount, 0, true)));
-											
-									}
-								});
+								scrollToBottom();
 							}
 							
 							/* if there is no data from query ,do the following thing  */
 							else{
 								alertLabel.setText("no "+selectColumnName+" = "+textFieldText);
-								
 								
 							}
 					}catch (SQLException e) {
