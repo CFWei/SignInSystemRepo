@@ -17,23 +17,29 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.JScrollPane;
 import javax.swing.JList;
 
 import SignInSystem.database.ConnectDatabase;
+import javax.swing.JCheckBox;
+import javax.swing.JRadioButton;
+import javax.swing.JLabel;
+import javax.swing.JComboBox;
 
 public class SettingDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
-	JList list;
-
+	final ConnectDatabase db=new ConnectDatabase();
+	JCheckBox[] selectColumnCheckbox;
 	public SettingDialog() {
 		
-		final ConnectDatabase db=new ConnectDatabase();
+		
 		db.connect("sample1.db");
-		final ArrayList<String> columnNameList=db.getColumnName("報名資料");;
+		
+		final ArrayList<String> columnNameList=db.getColumnName("報名資料");
 		
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
@@ -41,21 +47,73 @@ public class SettingDialog extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new GridLayout(2, 1, 0, 0));
 		{
-			JScrollPane scrollPane = new JScrollPane();
-			contentPanel.add(scrollPane);
-			{	
+			JPanel selectColumnPanel = new JPanel();
+			contentPanel.add(selectColumnPanel);
+			
+			selectColumnCheckbox=new JCheckBox[columnNameList.size()];
+			
+			for(int i=0;i<columnNameList.size();i++){
+				
+				selectColumnCheckbox[i]=new JCheckBox(columnNameList.get(i));
+				selectColumnCheckbox[i].setSelected(true);
+				selectColumnPanel.add(selectColumnCheckbox[i]);
+			}
+			
+			selectColumnPanel.setLayout(new GridLayout(3, 5, 0, 0));
+		}
+		{
+			JPanel modePanel = new JPanel();
+			contentPanel.add(modePanel);
+			{
+				JLabel label = new JLabel("選擇模式:");
+				modePanel.add(label);
+			}
+			{
 				
 				
-				
-				DefaultListModel listmodel=new DefaultListModel<String>();
-				/*
-				for(String columnName:columnNameList){
-					listmodel.addElement(columnName);
+				try {
+					//set the result count
+					ResultSet rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM ModeTable");
+					rs.next();
+					int resultCount = rs.getInt("rowcount");
+					
+					//select the modeName and insert to modeNameList
+					ResultSet modeNameResult=db.executeQuery("Select * from ModeTable");
+					String[] modeNameList=new String[resultCount];
+					int i=0;
+					while(modeNameResult.next()){
+						modeNameList[i]=modeNameResult.getString(1);
+						
+						i++;
+					}
+					
+					
+					JComboBox comboBox = new JComboBox(modeNameList);
+					modePanel.add(comboBox);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				*/
-				list = new JList(listmodel);
 				
-				scrollPane.setViewportView(list);
+			}
+			{
+				JButton addNewModeButton = new JButton("新增模式");
+			
+				addNewModeButton.addActionListener(new ActionListener() {
+					
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						db.executeUpdate("create table if not exists ModeTable (ModeName string);");
+						
+						AddModeDialog dialog = new AddModeDialog();
+						dialog.setSize(new Dimension(300,150));
+						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+						dialog.setVisible(true);
+						
+						dispose();
+					}
+				});
+				modePanel.add(addNewModeButton);
 			}
 		}
 		{
@@ -69,12 +127,20 @@ public class SettingDialog extends JDialog {
 					
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						//System.out.println(list.getSelectedValue());
+						
+						ArrayList<String> selectColumn=new ArrayList<String>();
+						for(int j=0;j<selectColumnCheckbox.length;j++){
+							if(selectColumnCheckbox[j].isSelected())
+								selectColumn.add(selectColumnCheckbox[j].getText());
+								
+						}
+						
 						
 						ResultSet existData = db.executeQuery("SELECT * from 報名資料");
-						StartSignInInterfaceRunnable smir=new StartSignInInterfaceRunnable(columnNameList,existData);
+						StartSignInInterfaceRunnable smir=new StartSignInInterfaceRunnable(selectColumn,existData);
 						SwingUtilities.invokeLater(smir);
 						dispose();
+						
 						
 					}
 				});

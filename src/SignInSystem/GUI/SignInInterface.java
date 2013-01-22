@@ -124,7 +124,14 @@ public class SignInInterface extends JFrame {
 				String textFieldText=null;
 				
 				public void appendDataToJTable() throws SQLException{
-					ResultSet testResult = db.executeQuery("SELECT * from 報名資料 where "+selectColumnName+" ='"+textFieldText+"'");
+					String selectColumn=new String();
+					for(int i=0;i<columnName.length;i++){
+						if(i!=0)
+							selectColumn+=",";
+						selectColumn+=columnName[i];
+						
+					}
+					ResultSet testResult = db.executeQuery("SELECT "+selectColumn+" from 報名資料 where "+selectColumnName+" ='"+textFieldText+"'");
 					while(testResult.next()){
 						String[] appendData=new String[columnName.length];
 						for(int i=0;i<columnName.length;i++)
