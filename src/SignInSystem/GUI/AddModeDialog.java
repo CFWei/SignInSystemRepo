@@ -34,10 +34,11 @@ public class AddModeDialog extends JDialog {
 			int resultCount = rs.getInt("rowcount");
 			
 			if(resultCount==0){
-				String query="Insert into "+tableName+"(ModeName) values('"+modeName.getText()+"')";
+				
+				String query="alter table "+dataTableName+" add column "+modeName.getText()+" default 0";
 				db.executeUpdate(query);
 				
-				query="alter table "+dataTableName+" add column "+modeName.getText();
+				query="Insert into "+tableName+"(ModeName) values('"+modeName.getText()+"')";
 				db.executeUpdate(query);
 			}
 			

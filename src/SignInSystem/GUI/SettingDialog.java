@@ -34,11 +34,39 @@ public class SettingDialog extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	final ConnectDatabase db=new ConnectDatabase();
 	JCheckBox[] selectColumnCheckbox;
+	JComboBox modeListBox;
+	String[] modeNameList;
+	
+	public void selectModeList() {
+		try {
+			//set the result count
+			db.executeUpdate("create table if not exists ModeTable (ModeName string);");
+			ResultSet rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM ModeTable");
+			rs.next();
+			int resultCount = rs.getInt("rowcount");
+			
+			//select the modeName and insert to modeNameList
+			ResultSet modeNameResult=db.executeQuery("Select * from ModeTable");
+			modeNameList=new String[resultCount];
+			int i=0;
+			while(modeNameResult.next()){
+				modeNameList[i]=modeNameResult.getString(1);
+				
+				i++;
+			}
+		
+		} 
+		
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+	}
 	public SettingDialog() {
 		
 		
 		db.connect("sample1.db");
-		
+		selectModeList();
 		final ArrayList<String> columnNameList=db.getColumnName("報名資料");
 		
 		setBounds(100, 100, 450, 300);
@@ -53,10 +81,19 @@ public class SettingDialog extends JDialog {
 			selectColumnCheckbox=new JCheckBox[columnNameList.size()];
 			
 			for(int i=0;i<columnNameList.size();i++){
-				
-				selectColumnCheckbox[i]=new JCheckBox(columnNameList.get(i));
-				selectColumnCheckbox[i].setSelected(true);
-				selectColumnPanel.add(selectColumnCheckbox[i]);
+				String columnName=columnNameList.get(i);
+				boolean flag=false;
+				for(int j=0;j<modeNameList.length;j++){
+					if(modeNameList[j].equals(columnName)){
+						flag=true;
+						break;
+					}
+				}
+				if(flag==false){
+					selectColumnCheckbox[i]=new JCheckBox(columnName);
+					selectColumnCheckbox[i].setSelected(true);
+					selectColumnPanel.add(selectColumnCheckbox[i]);
+				}
 			}
 			
 			selectColumnPanel.setLayout(new GridLayout(3, 5, 0, 0));
@@ -69,31 +106,9 @@ public class SettingDialog extends JDialog {
 				modePanel.add(label);
 			}
 			{
+					modeListBox = new JComboBox(modeNameList);
+					modePanel.add(modeListBox);
 				
-				
-				try {
-					//set the result count
-					ResultSet rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM ModeTable");
-					rs.next();
-					int resultCount = rs.getInt("rowcount");
-					
-					//select the modeName and insert to modeNameList
-					ResultSet modeNameResult=db.executeQuery("Select * from ModeTable");
-					String[] modeNameList=new String[resultCount];
-					int i=0;
-					while(modeNameResult.next()){
-						modeNameList[i]=modeNameResult.getString(1);
-						
-						i++;
-					}
-					
-					
-					JComboBox comboBox = new JComboBox(modeNameList);
-					modePanel.add(comboBox);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 				
 			}
 			{
@@ -130,17 +145,31 @@ public class SettingDialog extends JDialog {
 						
 						ArrayList<String> selectColumn=new ArrayList<String>();
 						for(int j=0;j<selectColumnCheckbox.length;j++){
-							if(selectColumnCheckbox[j].isSelected())
+							
+							if(selectColumnCheckbox[j]!=null&&selectColumnCheckbox[j].isSelected())
+								//System.out.println(selectColumnCheckbox[j].getText());
 								selectColumn.add(selectColumnCheckbox[j].getText());
-								
 						}
 						
+						/*check whether the mode list is selected*/
 						
-						ResultSet existData = db.executeQuery("SELECT * from 報名資料");
-						StartSignInInterfaceRunnable smir=new StartSignInInterfaceRunnable(selectColumn,existData);
-						SwingUtilities.invokeLater(smir);
-						dispose();
-						
+						if(modeListBox.getSelectedItem()!=null){
+							
+							String modeColumn=modeListBox.getSelectedItem().toString();
+							String selectColumnString =new String();
+							for(int i=0;i<selectColumn.size();i++){
+								if(i!=0)
+									selectColumnString+=",";
+								selectColumnString+=selectColumn.get(i);
+								
+							}
+							selectColumnString+=","+modeColumn;
+							
+							ResultSet existData = db.executeQuery("SELECT "+selectColumnString+" from 報名資料 where "+modeColumn+"=1");
+							StartSignInInterfaceRunnable smir=new StartSignInInterfaceRunnable(selectColumn,existData,modeColumn);
+							SwingUtilities.invokeLater(smir);
+							dispose();
+						}
 						
 					}
 				});
@@ -169,14 +198,16 @@ public class SettingDialog extends JDialog {
 class StartSignInInterfaceRunnable implements Runnable{
 	private ArrayList<String> columnName;
 	private ResultSet testResult;
-	public StartSignInInterfaceRunnable(ArrayList<String> columnName,ResultSet testResult){
+	private String modeColumn;
+	public StartSignInInterfaceRunnable(ArrayList<String> columnName,ResultSet testResult,String modeColumn){
 		this.columnName=columnName;
 		this.testResult=testResult;
+		this.modeColumn=modeColumn;
 	}
 	
 	@Override
 	public void run() {
-		SignInInterface frame = new SignInInterface(columnName,testResult);
+		SignInInterface frame = new SignInInterface(columnName,testResult,modeColumn);
 		
 		frame.setSize(new Dimension(800,600));
 		frame.setVisible(true);

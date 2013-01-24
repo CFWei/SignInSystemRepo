@@ -22,8 +22,6 @@ public class MainGUI extends JFrame {
 
 	private JPanel buttonContentPane;
 
-	
-
 	/**
 	 * Create the frame.
 	 */

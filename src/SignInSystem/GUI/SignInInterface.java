@@ -19,6 +19,7 @@ import java.awt.FlowLayout;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -46,7 +47,6 @@ public class SignInInterface extends JFrame {
 	private String formName="報名資料";
 	private String dataBase="sample1.db";
 	
-	
 	private JTable jTable=null;
 	private String[] columnName;
 	private ResultSet resultSet;
@@ -59,20 +59,23 @@ public class SignInInterface extends JFrame {
 	private JPanel controlPanel;
 	private JComboBox comboBox;
 	private JLabel alertLabel;
+	private String modeColumn;
 	
-	public SignInInterface(ArrayList<String> columnName,ResultSet resultSet){
+	public SignInInterface(ArrayList<String> columnName,ResultSet resultSet,String modeColumn){
 		db=new ConnectDatabase();
 		db.connect(dataBase);
 		
-		this.columnName=new String[columnName.size()];
+		this.columnName=new String[columnName.size()+2];
 		for(int i=0;i<columnName.size();i++){
 			this.columnName[i]=columnName.get(i);
 		}
-		
+		this.columnName[columnName.size()]=modeColumn;
+		this.columnName[columnName.size()+1]="Button";
 		if(resultSet!=null){
 			this.resultSet=resultSet;
 		}
 		
+		this.modeColumn=modeColumn;
 		setGUI();
 	}
 	
@@ -125,16 +128,16 @@ public class SignInInterface extends JFrame {
 				
 				public void appendDataToJTable() throws SQLException{
 					String selectColumn=new String();
-					for(int i=0;i<columnName.length;i++){
+					for(int i=0;i<columnName.length-1;i++){
 						if(i!=0)
 							selectColumn+=",";
 						selectColumn+=columnName[i];
 						
 					}
-					ResultSet testResult = db.executeQuery("SELECT "+selectColumn+" from 報名資料 where "+selectColumnName+" ='"+textFieldText+"'");
+					ResultSet testResult = db.executeQuery("SELECT "+selectColumn+" from "+formName+" where "+selectColumnName+" ='"+textFieldText+"'");
 					while(testResult.next()){
-						String[] appendData=new String[columnName.length];
-						for(int i=0;i<columnName.length;i++)
+						Object[] appendData=new String[columnName.length];
+						for(int i=0;i<columnName.length-1;i++)
 							appendData[i]=testResult.getString(i+1);	
 						setData(appendData);
 					}	
@@ -164,12 +167,13 @@ public class SignInInterface extends JFrame {
 					
 					try {	
 							/*Get result set count*/
-							ResultSet rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM 報名資料 where "+selectColumnName+" ='"+textFieldText+"'");
+							ResultSet rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM "+formName+" where "+selectColumnName+" ='"+textFieldText+"'");
 							rs.next();
 							int ResultCount = rs.getInt("rowcount");
 							
 							/*if there is any data from this query , do following thing */
 							if(ResultCount!=0){
+								db.executeUpdate("Update "+formName+" set "+modeColumn+" = 1 where "+selectColumnName+" = '"+textFieldText+"'");
 								/*clean the text field*/
 								textField.setText("");
 								alertLabel.setText("");
@@ -228,10 +232,13 @@ public class SignInInterface extends JFrame {
 			/*Set data from query result if resultSet is not null*/
 			if(resultSet!=null){
 				while(resultSet.next()){
-					String[] appendData=new String[columnName.length];
-					for(int i=0;i<columnName.length;i++)
-						appendData[i]=resultSet.getString(i+1);	
-					//setData(appendData);
+					Object[] appendData=new String[columnName.length];
+					for(int i=0;i<columnName.length-1;i++){
+						appendData[i]=resultSet.getString(i+1);
+					}
+					
+				
+					setData(appendData);
 				} 
 			
 			}
