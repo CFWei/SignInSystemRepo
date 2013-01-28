@@ -12,6 +12,7 @@ import javax.swing.JButton;
 
 import SignInSystem.component.ParseResult;
 import SignInSystem.database.ConnectDatabase;
+import SignInSystem.outputdata.OutputHtml;
 import SignInSystem.parser.ParseXML;
 
 import java.awt.Font;
@@ -93,6 +94,15 @@ public class MainGUI extends JFrame {
 		
 		JButton outputDataButton = new JButton("輸出簽到結果");
 		outputDataButton.setFont(new Font("標楷體", Font.PLAIN, 35));
+		outputDataButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				OutputHtml oh=new OutputHtml();
+				oh.output();
+				dispose();
+			}
+		});
 		buttonPanel3.add(outputDataButton);
 	}
 
