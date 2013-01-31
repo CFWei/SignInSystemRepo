@@ -91,6 +91,22 @@ public class ConnectDatabase {
 		
 	}
 	
+	public void addDataToTable(String tableName,ArrayList<ArrayList<String>> dataSet){
+		try {
+			
+			for(ArrayList<String> data:dataSet){
+				String query=insertParseData(tableName,data);
+				statement.addBatch(query);
+			}
+			statement.executeBatch();
+			statement.clearBatch();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	
 	public void addParseResult(String tableName,ParseResult parseResult){
 		
@@ -100,13 +116,6 @@ public class ConnectDatabase {
 		ArrayList<String> keyList=referenceTitle.getAllKey();
 		
 		ArrayList<PersonData> contentList=parseResult.getContentList();
-		
-		
-		//create table
-		//createTable("test2",referenceTitle.getAllTitle());
-		
-		
-		
 		try {
 			Statement stmt = connection.createStatement();
 			for(PersonData personData:contentList){
@@ -122,16 +131,30 @@ public class ConnectDatabase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
-		
-		
 
-		
+	}
 	
+	public String insertParseData(String tableName,ArrayList<String> data){
+		String query="Insert into "+tableName+" values(";
+		String insertData="";
+		boolean flag=false;
+		for(String dataValue:data){
+			if(flag==true)
+				insertData+=",";
+			else
+				flag=true;
+			
+			insertData+="'"+dataValue+"'";
+		}
+		
+		query+=insertData;
+		query+=")";
+		
+		return query;
 	}
 	
 	public String insertParseData(String tableName,LinkedHashMap<String,String> personData,ArrayList<String> keyList){
 		String query="Insert into "+tableName+" values(";
-		
 		
 		String insertData="";
 		boolean flag=false;

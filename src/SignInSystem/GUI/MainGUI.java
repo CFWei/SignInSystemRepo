@@ -4,20 +4,25 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.GridLayout;
 import javax.swing.JButton;
 
 import SignInSystem.component.ParseResult;
 import SignInSystem.database.ConnectDatabase;
 import SignInSystem.outputdata.OutputHtml;
+import SignInSystem.outputdata.excel.ParseExcelFile;
 import SignInSystem.parser.ParseXML;
 
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 public class MainGUI extends JFrame {
 
@@ -45,7 +50,7 @@ public class MainGUI extends JFrame {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				
+				/*
 				ParseXML p=new ParseXML();
 				ParseResult result=p.parse("test1.xml");
 				
@@ -54,6 +59,20 @@ public class MainGUI extends JFrame {
 				db.createTable("報名資料",result.getTitle().getAllTitle());
 				db.addParseResult("報名資料",result);
 				dispose();
+				*/
+				JFileChooser chooser = new JFileChooser();
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(
+					        "Excel File(.xlsx)","xlsx");
+				chooser.setFileFilter(filter);
+				int returnVal = chooser.showOpenDialog(MainGUI.this);
+				if(returnVal == JFileChooser.APPROVE_OPTION) {
+						File file=chooser.getSelectedFile();
+						ParseExcelFile pef=new ParseExcelFile(file);
+						pef.parse();
+					   
+				    }		
+				
+				
 			}
 		});
 		
