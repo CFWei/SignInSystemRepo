@@ -1,6 +1,8 @@
 package SignInSystem.database;
 
 import java.awt.Cursor;
+import java.io.Console;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -10,6 +12,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import javax.swing.JDialog;
+
+import SignInSystem.GUI.AlertMessage;
 import SignInSystem.component.ParseResult;
 import SignInSystem.component.PersonData;
 import SignInSystem.component.ReferenceTitle;
@@ -57,9 +62,14 @@ public class ConnectDatabase {
 		try {
 			return statement.executeQuery(query);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			AlertMessage dialog = new AlertMessage(e.getMessage());
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+
+			
 		}
+	
 		return null;
 		
 	}

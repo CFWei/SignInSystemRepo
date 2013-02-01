@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
@@ -29,7 +30,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
 
-public class SettingDialog extends JDialog {
+public class SettingDialog extends JFrame {
 
 	private final JPanel contentPanel = new JPanel();
 	final ConnectDatabase db=new ConnectDatabase();
@@ -165,7 +166,7 @@ public class SettingDialog extends JDialog {
 							}
 							selectColumnString+=","+modeColumn;
 							
-							ResultSet existData = db.executeQuery("SELECT "+selectColumnString+" from 報名資料 where "+modeColumn+"=1");
+							ResultSet existData = db.executeQuery("SELECT "+selectColumnString+" from 報名資料 where "+modeColumn+"!=0");
 							StartSignInInterfaceRunnable smir=new StartSignInInterfaceRunnable(selectColumn,existData,modeColumn);
 							SwingUtilities.invokeLater(smir);
 							dispose();

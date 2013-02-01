@@ -20,9 +20,12 @@ import java.awt.FlowLayout;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import SignInSystem.database.ConnectDatabase;
@@ -32,11 +35,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+
 import javax.swing.JSpinner;
 import javax.swing.JList;
 import javax.swing.JComboBox;
@@ -49,6 +57,7 @@ public class SignInInterface extends JFrame {
 	
 	private JTable jTable=null;
 	private String[] columnName;
+	private String[] jComboBoxColumnName; 
 	private ResultSet resultSet;
 	private Object[] data=null;
 	private DefaultTableModel model ;
@@ -65,17 +74,20 @@ public class SignInInterface extends JFrame {
 		db=new ConnectDatabase();
 		db.connect(dataBase);
 		
-		this.columnName=new String[columnName.size()+2];
+		this.columnName=new String[columnName.size()+1];
+		jComboBoxColumnName=new String[columnName.size()];
 		for(int i=0;i<columnName.size();i++){
 			this.columnName[i]=columnName.get(i);
+			this.jComboBoxColumnName[i]=columnName.get(i);
 		}
 		this.columnName[columnName.size()]=modeColumn;
-		this.columnName[columnName.size()+1]="Button";
+		//this.columnName[columnName.size()+1]="Button";
 		if(resultSet!=null){
 			this.resultSet=resultSet;
 		}
 		
 		this.modeColumn=modeColumn;
+		setTitle(modeColumn);
 		setGUI();
 	}
 	
@@ -108,6 +120,7 @@ public class SignInInterface extends JFrame {
 		controlPanel=new JPanel();
 		controlPanel.setBackground(Color.black);
 		setControlPanel(controlPanel);
+		
 		/*set GridBagConstraints of controlPanel*/
 		GridBagConstraints gbc_controlPanel=new GridBagConstraints();
 		gbc_controlPanel.fill=GridBagConstraints.BOTH;
@@ -117,7 +130,7 @@ public class SignInInterface extends JFrame {
 		getContentPane().add(controlPanel,gbc_controlPanel);
 		
 		/*Add combo box to conrtol panel*/
-		comboBox = new JComboBox(columnName);
+		comboBox = new JComboBox(jComboBoxColumnName);
 		controlPanel.add(comboBox);
 		
 		final JTextField textField = new JTextField();
@@ -128,16 +141,16 @@ public class SignInInterface extends JFrame {
 				
 				public void appendDataToJTable() throws SQLException{
 					String selectColumn=new String();
-					for(int i=0;i<columnName.length-1;i++){
+					for(int i=0;i<columnName.length;i++){
 						if(i!=0)
 							selectColumn+=",";
 						selectColumn+=columnName[i];
-						
+						System.out.println(columnName[i]);
 					}
 					ResultSet testResult = db.executeQuery("SELECT "+selectColumn+" from "+formName+" where "+selectColumnName+" ='"+textFieldText+"'");
 					while(testResult.next()){
 						Object[] appendData=new String[columnName.length];
-						for(int i=0;i<columnName.length-1;i++)
+						for(int i=0;i<columnName.length;i++)
 							appendData[i]=testResult.getString(i+1);	
 						setData(appendData);
 					}	
@@ -167,13 +180,14 @@ public class SignInInterface extends JFrame {
 					
 					try {	
 							/*Get result set count*/
-							ResultSet rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM "+formName+" where "+selectColumnName+" ='"+textFieldText+"'");
+							ResultSet rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM "+formName+" where "+selectColumnName+" ='"+textFieldText+"' and "+modeColumn+" = 0");
 							rs.next();
 							int ResultCount = rs.getInt("rowcount");
 							
 							/*if there is any data from this query , do following thing */
 							if(ResultCount!=0){
-								db.executeUpdate("Update "+formName+" set "+modeColumn+" = 1 where "+selectColumnName+" = '"+textFieldText+"'");
+								String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime());
+								db.executeUpdate("Update "+formName+" set "+modeColumn+" = '"+timeStamp+"' where "+selectColumnName+" = '"+textFieldText+"'");
 								/*clean the text field*/
 								textField.setText("");
 								alertLabel.setText("");
@@ -190,7 +204,7 @@ public class SignInInterface extends JFrame {
 							
 							/* if there is no data from query ,do the following thing  */
 							else{
-								alertLabel.setText("no "+selectColumnName+" = "+textFieldText);
+								alertLabel.setText("no "+selectColumnName+" = "+textFieldText+" and "+modeColumn+" = 0");
 								
 							}
 					}catch (SQLException e) {
@@ -228,13 +242,15 @@ public class SignInInterface extends JFrame {
 	
 	public void setJTale(){
 		model = new DefaultTableModel(columnName,0);
+		
 		try {
 			/*Set data from query result if resultSet is not null*/
 			if(resultSet!=null){
 				while(resultSet.next()){
 					Object[] appendData=new String[columnName.length];
-					for(int i=0;i<columnName.length-1;i++){
+					for(int i=0;i<columnName.length;i++){
 						appendData[i]=resultSet.getString(i+1);
+					
 					}
 					
 				
@@ -244,7 +260,71 @@ public class SignInInterface extends JFrame {
 			}
 			
 		jTable=new JTable(model);
+		
 		jTable.setEnabled(false);
+		jTable.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(e.getButton()==java.awt.event.MouseEvent.BUTTON3){
+					int rowPoint=jTable.rowAtPoint(e.getPoint());
+					final int columnPoint=jTable.columnAtPoint(e.getPoint());
+					
+					String pointColumnName=jTable.getColumnName(columnPoint);
+					String pointColumnValue=jTable.getValueAt(rowPoint,columnPoint).toString();
+					/*
+					//create popup menu
+					JMenuItem deleteButton = new JMenuItem("§R°£("+pointColumnName+":"+pointColumnValue+")"); 
+					JPopupMenu poMenu = new JPopupMenu();
+					poMenu.add(deleteButton);
+					
+					//add eventlistener for delete data
+					deleteButton.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent arg0) {
+							deleteData(columnPoint);
+							
+						}
+						
+						public void deleteData(int columnPoint){
+							
+							
+						}
+						
+					});
+					
+					
+					poMenu.show(e.getComponent(),e.getX(),e.getY());
+					*/
+				}
+				
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				
+				
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				
+				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				
+				
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				
+				
+			}
+		});
+		
 		}
 		
 		catch (SQLException e) {

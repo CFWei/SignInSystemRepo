@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.View;
 
 import java.awt.GridLayout;
 import javax.swing.JButton;
@@ -33,6 +34,7 @@ public class MainGUI extends JFrame {
 	 */
 	public MainGUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setTitle("簽到系統");
 		
 		setBounds(100, 100, 450, 300);
 		buttonContentPane = new JPanel();
@@ -71,7 +73,9 @@ public class MainGUI extends JFrame {
 						pef.parse();
 					   
 				    }		
-				
+				AlertMessage dialog = new AlertMessage("載入資料完成");
+				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+				dialog.setVisible(true);
 				
 			}
 		});
@@ -82,7 +86,17 @@ public class MainGUI extends JFrame {
 		buttonContentPane.add(panel);
 		panel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JButton btnNewButton = new JButton("手動輸入報名資料");
+		JButton btnNewButton = new JButton("檢視資料庫資料");
+		btnNewButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				ViewAllData frame = new ViewAllData();
+				frame.setVisible(true);
+				dispose();
+				
+			}
+		});
 		btnNewButton.setFont(new Font("標楷體", Font.PLAIN, 35));
 		panel.add(btnNewButton);
 		
@@ -119,7 +133,10 @@ public class MainGUI extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				OutputHtml oh=new OutputHtml();
 				oh.output();
-				dispose();
+				
+				AlertMessage dialog = new AlertMessage("輸出簽到結果完成");
+				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+				dialog.setVisible(true);
 			}
 		});
 		buttonPanel3.add(outputDataButton);

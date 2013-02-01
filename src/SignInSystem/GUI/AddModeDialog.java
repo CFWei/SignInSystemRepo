@@ -81,6 +81,13 @@ public class AddModeDialog extends JDialog {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						addNewMode();
+						
+						SettingDialog dialog = new SettingDialog();
+						dialog.setResizable(false);
+						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+						dialog.setVisible(true);
+						
+						
 						dispose();
 						
 					}
