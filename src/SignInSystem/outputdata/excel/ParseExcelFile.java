@@ -19,7 +19,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import SignInSystem.database.ConnectDatabase;
 
 public class ParseExcelFile {
-	private String fileName="testExcel.xlsx";
+	
 	private File parseFile;
 	private String databaseName="sample1.db";
 	private String tableName="報名資料";
@@ -41,7 +41,23 @@ public class ParseExcelFile {
 		db.addDataToTable(tableName,dataSet);
 	}
 	
-	public void parse() {
+	
+	public boolean isDatabaseExist(){
+		File f=new File(databaseName);
+		if(f.exists())
+			return true;
+		else
+			return false;
+		
+	}
+	
+	public boolean parse() {
+		if(isDatabaseExist()){
+			return false;
+		}
+		
+		
+		
 		try {
 			Workbook wb = WorkbookFactory.create(parseFile);
 			Sheet sheet = wb.getSheetAt(0);
@@ -81,7 +97,7 @@ public class ParseExcelFile {
 			e.printStackTrace();
 		}
 		
-		
+		return true;
 		
 
 	}

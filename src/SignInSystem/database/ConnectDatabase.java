@@ -210,6 +210,8 @@ public class ConnectDatabase {
 				insertColumnName+=",";
 			else
 				flag=true;
+			
+
 			insertColumnName+="\""+colum+"\"";
 			insertColumnName+=" ";
 			insertColumnName+="string";

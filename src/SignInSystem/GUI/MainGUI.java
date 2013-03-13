@@ -63,6 +63,8 @@ public class MainGUI extends JFrame {
 				dispose();
 				*/
 				JFileChooser chooser = new JFileChooser();
+				
+				String alertMessage="";
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(
 					        "Excel File(.xlsx)","xlsx");
 				chooser.setFileFilter(filter);
@@ -70,12 +72,29 @@ public class MainGUI extends JFrame {
 				if(returnVal == JFileChooser.APPROVE_OPTION) {
 						File file=chooser.getSelectedFile();
 						ParseExcelFile pef=new ParseExcelFile(file);
-						pef.parse();
-					   
-				    }		
-				AlertMessage dialog = new AlertMessage("載入資料完成");
+						boolean parseFlag=pef.parse();
+						
+						if(parseFlag){
+							
+							alertMessage="資料載入完成";
+						}
+						else{
+							alertMessage="Database已存在，請先刪除再執行";
+							
+						}
+						
+				    }	
+				else{
+					
+					alertMessage="資料未載入";
+					
+				}
+				
+				
+				AlertMessage dialog = new AlertMessage(alertMessage);
 				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 				dialog.setVisible(true);
+				
 				
 			}
 		});

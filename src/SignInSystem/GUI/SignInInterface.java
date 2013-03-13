@@ -145,7 +145,7 @@ public class SignInInterface extends JFrame {
 						if(i!=0)
 							selectColumn+=",";
 						selectColumn+=columnName[i];
-						System.out.println(columnName[i]);
+						
 					}
 					ResultSet testResult = db.executeQuery("SELECT "+selectColumn+" from "+formName+" where "+selectColumnName+" ='"+textFieldText+"'");
 					while(testResult.next()){
@@ -204,7 +204,13 @@ public class SignInInterface extends JFrame {
 							
 							/* if there is no data from query ,do the following thing  */
 							else{
-								alertLabel.setText("no "+selectColumnName+" = "+textFieldText+" and "+modeColumn+" = 0");
+								rs=db.executeQuery("SELECT COUNT(*) AS rowcount FROM "+formName+" where "+selectColumnName+" ='"+textFieldText+"'");
+								rs.next();
+								int count = rs.getInt("rowcount");
+								if(count!=0)
+									alertLabel.setText("已經簽到過");
+								else
+									alertLabel.setText("沒有此筆資料");
 								
 							}
 					}catch (SQLException e) {
@@ -219,7 +225,7 @@ public class SignInInterface extends JFrame {
 		
 		textField.setColumns(10);
 		
-		alertLabel = new JLabel("New label");
+		alertLabel = new JLabel("");
 		alertLabel.setForeground(Color.YELLOW);
 		controlPanel.add(alertLabel);
 
