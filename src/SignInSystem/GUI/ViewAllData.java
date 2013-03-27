@@ -34,9 +34,7 @@ public class ViewAllData extends JFrame {
 	private String tableName="報名資料";
 	
 
-	/**
-	 * Create the frame.
-	 */
+
 	public ViewAllData() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);

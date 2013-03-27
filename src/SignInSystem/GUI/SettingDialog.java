@@ -34,6 +34,7 @@ public class SettingDialog extends JFrame {
 
 	private final JPanel contentPanel = new JPanel();
 	final ConnectDatabase db=new ConnectDatabase();
+	private String databaseName="sample1.db";
 	JCheckBox[] selectColumnCheckbox;
 	JComboBox modeListBox;
 	String[] modeNameList;
@@ -66,7 +67,7 @@ public class SettingDialog extends JFrame {
 	public SettingDialog() {
 		
 		
-		db.connect("sample1.db");
+		db.connect(databaseName);
 		selectModeList();
 		final ArrayList<String> columnNameList=db.getColumnName("報名資料");
 		

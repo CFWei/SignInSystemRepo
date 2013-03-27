@@ -16,6 +16,7 @@ import SignInSystem.database.ConnectDatabase;
 public class OutputHtml {
 	private String database="sample1.db";
 	private String formName="報名資料";
+	private String ouputFormName="output.html";
 	ConnectDatabase db=new ConnectDatabase();
 	ArrayList<HashMap<String, String> > allPersonData=new ArrayList<HashMap<String,String>>();
 	ArrayList<String> columnName;
@@ -31,7 +32,7 @@ public class OutputHtml {
 	
 	public void outputToFile(){
 		 try {
-			 	PrintStream pstream = new PrintStream(new BufferedOutputStream(new FileOutputStream("output.html", false)));
+			 	PrintStream pstream = new PrintStream(new BufferedOutputStream(new FileOutputStream(ouputFormName, false)));
 			 	PrintWriter out = new PrintWriter(pstream, true);
 			 	/*print column*/
 			 	out.print("<table style=\"border:1px solid;\"><tr>");

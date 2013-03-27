@@ -22,10 +22,7 @@ import SignInSystem.component.ReferenceTitle;
 
 
 public class ParseXML {
-	
-	
-	
-	
+
 	public ParseResult parse(String filePath){
 		
 		ReferenceTitle rt=null;
